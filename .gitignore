@@ -1,0 +1,8 @@
+build/
+dist/
+*.class
+nbproject/private/
+logs/
+Thumbs.db
+portable/.minecraft/
+portable/runtimes
