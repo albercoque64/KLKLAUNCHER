@@ -8,9 +8,9 @@ set ROOT=%~dp0
 if %ROOT:~-1%==\ set ROOT=%ROOT:~0,-1%
 set BASE_DIR=%ROOT%\portable\.minecraft
 
-set JAVA_EXEC="%~dp0portable\runtimes\adoptium\bin\java.exe"
+set JAVA_EXEC="%~dp0portable\runtimes\graal\bin\java.exe"
 
-set MAX_RAM=6144m
+set MAX_RAM=8192m
 
 set USUARIO=albercoque64
 

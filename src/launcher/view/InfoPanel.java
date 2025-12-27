@@ -25,11 +25,12 @@ public class InfoPanel extends JPanel {
     JButton opciones = new JButton();
     JButton launcher = new JButton();
     JButton mods = new JButton();
+    JButton carpetaMods = new JButton();
 
     public InfoPanel() {
 
         //LABELS
-        labelVacio.setPreferredSize(new Dimension(255, 0));
+        labelVacio.setPreferredSize(new Dimension(80, 0));
 
         //BOTONES
         opciones.setText("OPCIONES");
@@ -56,11 +57,20 @@ public class InfoPanel extends JPanel {
         mods.setFocusPainted(false);
         mods.setMargin(new java.awt.Insets(7, 10, 0, 10));
 
+        carpetaMods.setText("ABRIR MODS");
+        carpetaMods.setFont(fuenteBoton);
+        carpetaMods.setForeground(Color.WHITE);
+        carpetaMods.setBackground(new Color(230, 126, 34));
+        carpetaMods.setActionCommand("CARPETAMODS");
+        carpetaMods.setFocusPainted(false);
+        carpetaMods.setMargin(new java.awt.Insets(7, 10, 0, 10));
+
         this.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 0));
         this.setBackground(new Color(60, 63, 65));
         this.setPreferredSize(new java.awt.Dimension(0, 88));
         this.setBorder(new MatteBorder(25, 0, 0, 0, new Color(60, 63, 65)));
 
+        this.add(carpetaMods);
         this.add(labelVacio);
         this.add(mods);
         this.add(launcher);
@@ -72,5 +82,6 @@ public class InfoPanel extends JPanel {
         opciones.addActionListener(actionListener);
         launcher.addActionListener(actionListener);
         mods.addActionListener(actionListener);
+        carpetaMods.addActionListener(actionListener);
     }
 }
