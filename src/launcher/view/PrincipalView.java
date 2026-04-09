@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.JFrame;
 
 public class PrincipalView extends JFrame {
@@ -25,7 +26,7 @@ public class PrincipalView extends JFrame {
         double alto = screenSize.height * 0.5;
         this.setSize((int) ancho, (int) alto);
         this.setLocationRelativeTo(null);
-        this.setResizable(false);
+        this.setResizable(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -93,6 +94,16 @@ public class PrincipalView extends JFrame {
 
     public void encenderJugar() {
         panelOpciones.encenderJugar();
+    }
+
+    public void setPerfil(List<String> lista, String instancia) {
+        panelOpciones.setPerfil(lista, instancia);
+    }
+
+    public String getPerfil() {
+
+        return panelOpciones.getPerfil();
+
     }
 
     //LISTENERS

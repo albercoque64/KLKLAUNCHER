@@ -6,11 +6,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
 import launcher.model.JarParser;
 import launcher.model.Mod;
+import launcher.model.MotorLanzamiento;
 import launcher.model.TextParser;
+import launcher.model.VersionManager;
 import launcher.utils.JModButton;
 import launcher.view.PrincipalView;
+import launcher.view.launcher.InstalarView;
+import launcher.view.launcher.InstanciasConfig;
+import launcher.view.launcher.LauncherView;
 import launcher.view.mods.ModsConfig;
 import launcher.view.mods.ModsInfo;
 import launcher.view.mods.ModsView;
@@ -18,21 +24,33 @@ import launcher.view.options.Options;
 
 public class Controller {
 
+    //VISTAS
     private PrincipalView view;
-    private TextParser model;
     private Options options;
+    private LauncherView launcherView;
     private ModsConfig modConfig;
     private ModsInfo modInfo;
     private ModsView modView;
+    private InstalarView instalation;
+    private InstanciasConfig instanciasConfig;
 
+    //MODELO
+    private TextParser model;
+
+    //CLASES EMPOTRADAS
     KLKLauncherActionListener onlyModelActionListener = new KLKLauncherActionListener();
     ModManager modGestionerListener = new ModManager();
 
-    public Controller(PrincipalView view, Options options, TextParser textParser, ModsConfig modConfig, ModsInfo modInfo, ModsView modView) {
+    public Controller(PrincipalView view, Options options, TextParser textParser, ModsConfig modConfig, ModsInfo modInfo, ModsView modView, LauncherView launcherView,
+            InstalarView instalation, InstanciasConfig instanciasConfig) {
 
         this.view = view;
         this.model = textParser;
         this.options = options;
+        this.launcherView = launcherView;
+
+        this.instalation = instalation;
+        this.instanciasConfig = instanciasConfig;
 
         this.modConfig = modConfig;
         this.modInfo = modInfo;
@@ -41,8 +59,9 @@ public class Controller {
         this.modView.setActionListener(onlyModelActionListener);
         this.view.setActionListeners(onlyModelActionListener);
         this.options.setActionListeners(onlyModelActionListener);
-
-        inicializacion();
+        this.launcherView.setActionListener(onlyModelActionListener);
+        this.instalation.setActionListener(onlyModelActionListener);
+        this.instanciasConfig.setActionListener(onlyModelActionListener);
 
         try {
 
@@ -63,7 +82,7 @@ public class Controller {
             System.err.println("No se pudo conectar a Discord (¿Falta la librería?): " + e.getMessage());
         }
 
-        this.modConfig.setMods(inicializadorMods());
+        inicializacion();
     }
 
     class KLKLauncherActionListener implements ActionListener {
@@ -77,23 +96,121 @@ public class Controller {
 
                 case "JUGAR":
 
-                    model.actualizarVariablesBat(view.getJavaVersion(), view.getRamEnMB(), view.getUsuario());
-
                     lanzarJuego();
 
+                    guardalizador();
+
                     break;
+
+                //LAUNCHER    
+                case "LAUNCHER":
+
+                    launcherView.setVisible(true);
+
+                    break;
+
+                case "INSTALAR":
+
+                    instalation.setVisible(true);
+
+                    break;
+
+                case "PERFILES":
+
+                    java.io.File carpetaInstancias = new java.io.File(System.getProperty("user.dir") + "\\portable\\instancias");
+                    java.util.List<String> nombresInstancias = new java.util.ArrayList<>();
+
+                    if (carpetaInstancias.exists() && carpetaInstancias.isDirectory()) {
+                        for (java.io.File f : carpetaInstancias.listFiles()) {
+                            if (f.isDirectory()) {
+                                nombresInstancias.add(f.getName());
+                            }
+                        }
+                    }
+
+                    instanciasConfig.setInstancias(nombresInstancias);
+                    instanciasConfig.setActionListener(this);
+                    instanciasConfig.setVisible(true);
+                    break;
+
+                case "CONFIRMARELIMINARINSTANCIA":
+
+                    JButton botonPulsado = (javax.swing.JButton) e.getSource();
+                    String instanciaAEliminar = botonPulsado.getText();
+
+                    int confirmacion1 = javax.swing.JOptionPane.showConfirmDialog(
+                            null,
+                            "¿Estás seguro de que quieres eliminar la instancia '" + instanciaAEliminar + "'?\nSe borrarán todos sus mods, opciones y mundos.",
+                            "Eliminar Instancia",
+                            javax.swing.JOptionPane.YES_NO_OPTION,
+                            javax.swing.JOptionPane.WARNING_MESSAGE
+                    );
+
+                    if (confirmacion1 == javax.swing.JOptionPane.YES_OPTION) {
+
+                        int confirmacion2 = javax.swing.JOptionPane.showConfirmDialog(
+                                null,
+                                "Esta acción NO se puede deshacer. ¿Borrar definitivamente?",
+                                "Último aviso",
+                                javax.swing.JOptionPane.YES_NO_OPTION,
+                                javax.swing.JOptionPane.ERROR_MESSAGE
+                        );
+
+                        if (confirmacion2 == javax.swing.JOptionPane.YES_OPTION) {
+
+                            String rutaInstancia = System.getProperty("user.dir") + "\\portable\\instancias\\" + instanciaAEliminar;
+                            File carpetaInstancia = new java.io.File(rutaInstancia);
+
+                            boolean exito = instanciasConfig.borrarDirectorio(carpetaInstancia);
+
+                            if (exito) {
+                                javax.swing.JOptionPane.showMessageDialog(null, "Instancia eliminada.");
+
+                                java.awt.Window ventana = javax.swing.SwingUtilities.getWindowAncestor(botonPulsado);
+                                if (ventana != null) {
+                                    ventana.setVisible(false);
+                                }
+
+                            } else {
+                                javax.swing.JOptionPane.showMessageDialog(null, "Error al borrar la instancia. Puede que algún archivo esté abierto.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                    view.setPerfil(model.escanearInstancias(), model.leerAtributo("instancia"));
+
+                    break;
+
+                case "JAR":
+
+                    VersionManager.instalador(view, instalation.getNombreInstancia());
+                    view.revalidate();
+                    view.repaint();
+                    view.setPerfil(model.escanearInstancias(), model.leerAtributo("instancia"));
+                    instalation.setVisible(false);
+
+                    break;
+
+                case "CANCELAR":
+
+                    instalation.limpiarCampo();
+                    instalation.setVisible(false);
+
+                    break;
+
                 //MODS
                 case "CARPETAMODS":
                     
                     try {
-                    java.io.File carpetaMods = new java.io.File(System.getProperty("user.dir") + "\\portable\\.minecraft\\mods");
+                    String instanciaActual = view.getPerfil();
+
+                    String rutaMods = System.getProperty("user.dir") + "\\portable\\instancias\\" + instanciaActual + "\\mods";
+                    java.io.File carpetaMods = new java.io.File(rutaMods);
 
                     if (!carpetaMods.exists()) {
                         carpetaMods.mkdirs();
                     }
-                    java.awt.Desktop.getDesktop().open(carpetaMods);
 
-                    break;
+                    java.awt.Desktop.getDesktop().open(carpetaMods);
 
                 } catch (IOException ex) {
                     javax.swing.JOptionPane.showMessageDialog(view, "No se pudo abrir la carpeta: " + ex.getMessage());
@@ -102,7 +219,19 @@ public class Controller {
                 break;
 
                 case "MODS":
-                    modView.setVisible(true);
+
+                    String instanciaMods = view.getPerfil();
+
+                    if (instanciaMods != null && !instanciaMods.isEmpty()) {
+
+                        modConfig.setMods(inicializadorMods(instanciaMods));
+                        modConfig.setActionListener(modGestionerListener);
+                        modView.setVisible(true);
+
+                    } else {
+                        System.out.println("No se puede abrir: No hay instancia seleccionada.");
+                    }
+
                     break;
 
                 case "MODINFO":
@@ -112,11 +241,35 @@ public class Controller {
 
                 case "MODCONFIG":
                     modView.setVisible(false);
-                    modConfig.setVisible(true);
+                    modConfig.setVisible(true); // ¡Aquí se mostrará por fin llena y repintada!
                     break;
+
                 //OPCIONES
                 case "OPCIONES":
 
+                    String nuevaInstancia = view.getPerfil();
+
+                    if (nuevaInstancia != null && !nuevaInstancia.isEmpty()) {
+
+                        model.cargarOpcionesDeInstancia(nuevaInstancia);
+                        model.escribitAtributo("instancia", nuevaInstancia);
+
+                        options.setFullScreenButton(model.getFullscreen());
+                        options.setVboButton(model.getUseVbo());
+                        options.setAdvancedToolTipsButton(model.getAdvancedItemTooltips());
+                        options.setLang(model.getLang());
+                        options.setGuiScale(model.getGuiScale());
+
+                        options.setOptifineHabilitado(model.hasOptifine());
+                        options.setConnectedTextures(model.getOfConnectedTextures());
+                        options.setFastRender(model.getOfFastRender());
+                        options.setShowFps(model.getOfShowFps());
+                        options.setDynamicLights(model.getOfDynamicLights());
+                        options.setSmartAnimations(model.getOfSmartAnimations());
+
+                        options.setVisible(true);
+                    }
+                    /*
                     options.setFullScreenButton(model.getFullscreen());
                     options.setVboButton(model.getUseVbo());
                     options.setAdvancedToolTipsButton(model.getAdvancedItemTooltips());
@@ -127,8 +280,8 @@ public class Controller {
                     options.setShowFps(model.getOfShowFps());
                     options.setDynamicLights(model.getOfDynamicLights());
                     options.setSmartAnimations(model.getOfSmartAnimations());
-                    options.setVisible(true);
-
+                    
+                     */
                     break;
 
                 case "FULLSCREEN":
@@ -183,22 +336,33 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            System.out.println(e.getSource());
             JModButton fuente = ((JModButton) e.getSource());
 
-            File ficherin = new File(fuente.getMod().getNombreArchivo());
+            String instanciaActual = view.getPerfil();
+            String rutaMods = System.getProperty("user.dir") + "\\portable\\instancias\\" + instanciaActual + "\\mods\\";
 
+            String nombreArchivoLimpio = new File(fuente.getMod().getNombreArchivo()).getName();
+
+            File ficherin = new File(rutaMods + nombreArchivoLimpio);
             File ficheroRenombrado;
-            if (ficherin.getName().endsWith(".jaroff")) {
-                ficheroRenombrado = new File(fuente.getMod().getNombreArchivo().substring(0, fuente.getMod().getNombreArchivo().length() - ".jaroff".length()) + ".jar");
+
+            if (nombreArchivoLimpio.endsWith(".jaroff")) {
+                String nuevoNombre = nombreArchivoLimpio.replace(".jaroff", ".jar");
+                ficheroRenombrado = new File(rutaMods + nuevoNombre);
             } else {
-                ficheroRenombrado = new File(fuente.getMod().getNombreArchivo().substring(0, fuente.getMod().getNombreArchivo().length() - ".jar".length()) + ".jaroff");
+                String nuevoNombre = nombreArchivoLimpio.replace(".jar", ".jaroff");
+                ficheroRenombrado = new File(rutaMods + nuevoNombre);
             }
 
-            ficherin.renameTo(ficheroRenombrado);
-            fuente.getMod().setNombreArchivo(ficheroRenombrado.getName());
-            fuente.setColor();
+            boolean exito = ficherin.renameTo(ficheroRenombrado);
 
+            if (exito) {
+                fuente.getMod().setNombreArchivo(ficheroRenombrado.getName());
+                fuente.setColor();
+                System.out.println("Mod actualizado con éxito: " + ficheroRenombrado.getName());
+            } else {
+                System.out.println("¡ERROR! No se pudo renombrar el archivo: " + ficherin.getAbsolutePath());
+            }
         }
     }
 
@@ -206,11 +370,13 @@ public class Controller {
 
         view.apagarJugar();
         try {
-            String usuario = view.getOptionPanel().getUsuario();
-            if (usuario.isEmpty()) {
+            guardalizador();
+
+            String usuario = view.getUsuario();
+            if (usuario == null || usuario.isEmpty()) {
                 usuario = "Steve";
             }
-            int ram = view.getOptionPanel().getRamEnMB();
+            int ram = view.getRamEnMB();
 
             try {
                 launcher.utils.DiscordHandler.actualizarEstado("Jugando Minecraft 1.12.2", "Usuario: " + usuario);
@@ -222,30 +388,25 @@ public class Controller {
             view.getConsolePanel().log("> Usuario: " + usuario);
             view.getConsolePanel().log("> RAM: " + ram + "MB");
 
-            String rutaBase = System.getProperty("user.dir");
-            java.io.File scriptBat = new java.io.File(rutaBase, "start.bat");
-
-            if (!scriptBat.exists()) {
-                view.getConsolePanel().log("ERROR: No encuentro start.bat en: " + scriptBat.getAbsolutePath());
-                return;
-            }
-
-            ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", "\"" + scriptBat.getAbsolutePath() + "\"");
-            pb.directory(new java.io.File(rutaBase));
-            pb.redirectErrorStream(true);
-
-            Process proceso = pb.start();
-
             Thread hiloLector = new Thread(() -> {
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(proceso.getInputStream()))) {
+                try {
+                    MotorLanzamiento motor = new MotorLanzamiento();
+                    Process proceso = motor.arrancarJuego(view.getPerfil(), view.getUsuario(), view.getRamEnMB(), view.getJavaVersion());
 
-                    String linea;
-                    while ((linea = reader.readLine()) != null) {
-                        view.getConsolePanel().log(linea);
+                    if (proceso != null) {
+                        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                                new java.io.InputStreamReader(proceso.getInputStream()))) {
+
+                            String linea;
+                            while ((linea = reader.readLine()) != null) {
+                                view.getConsolePanel().log(linea);
+                            }
+
+                            proceso.waitFor();
+                        }
+                    } else {
+                        view.getConsolePanel().log("ERROR: No se pudo iniciar el proceso de Minecraft.");
                     }
-
-                    proceso.waitFor();
 
                     try {
                         launcher.utils.DiscordHandler.actualizarEstado("En el Menú", "Descansando del cubo");
@@ -275,26 +436,36 @@ public class Controller {
     }
 
     public void inicializacion() {
-        view.setJavaVersion(model.getJavaOpcion());
-        view.setRAM(model.getRam());
-        view.setUsuario(model.getUsuario());
+
+        view.setJavaVersion(Integer.parseInt(model.leerAtributo("motor")));
+        view.setRAM(Integer.parseInt(model.leerAtributo("ram")));
+        view.setUsuario(model.leerAtributo("usuario"));
+        view.setPerfil(model.escanearInstancias(), model.leerAtributo("instancia"));
+
+    }
+
+    public void guardalizador() {
+        model.escribitAtributo("usuario", view.getUsuario());
+        model.escribitAtributo("ram", String.valueOf(view.getRamEnMB()));
+        model.escribitAtributo("instancia", view.getPerfil());
+        model.escribitAtributo("motor", String.valueOf(view.getJavaVersion()));
+
     }
 
     public void setModListener() {
         this.modConfig.setActionListener(modGestionerListener);
     }
 
-    public List<JModButton> inicializadorMods() {
+    public List<JModButton> inicializadorMods(String nombreInstancia) {
         JarParser jarParser = new JarParser();
-        List<Mod> modsEncontrados = jarParser.escanearMods();
-        List<JModButton> botones = new ArrayList();
+        List<Mod> modsEncontrados = jarParser.escanearMods(nombreInstancia);
+        List<JModButton> botones = new ArrayList<>();
 
         if (modsEncontrados != null) {
             for (Mod mod : modsEncontrados) {
                 System.out.println(mod);
                 JModButton boton = new JModButton(mod);
                 botones.add(boton);
-
             }
         }
         this.modInfo.setMods(modsEncontrados);

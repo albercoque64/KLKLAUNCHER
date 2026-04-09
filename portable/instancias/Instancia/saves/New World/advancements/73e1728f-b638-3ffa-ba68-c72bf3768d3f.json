@@ -1,0 +1,47 @@
+{
+  "minecraft:recipes/misc/book": {
+    "criteria": {
+      "has_paper": "2026-04-02 13:46:45 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/redstone/tnt": {
+    "criteria": {
+      "has_gunpowder": "2026-04-02 13:46:40 +0200"
+    },
+    "done": true
+  },
+  "minecraft:end/elytra": {
+    "criteria": {
+      "elytra": "2026-04-02 13:45:55 +0200"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "forest": "2026-04-02 13:47:50 +0200",
+      "swampland": "2026-04-02 13:48:14 +0200",
+      "birch_forest": "2026-04-02 13:48:20 +0200",
+      "deep_ocean": "2026-04-02 13:45:36 +0200",
+      "beaches": "2026-04-01 18:10:29 +0200",
+      "desert_hills": "2026-04-02 14:10:47 +0200",
+      "forest_hills": "2026-04-02 13:47:48 +0200",
+      "plains": "2026-04-01 18:09:32 +0200",
+      "savanna": "2026-04-02 13:48:26 +0200",
+      "savanna_rock": "2026-04-02 13:48:33 +0200",
+      "taiga": "2026-04-02 13:47:46 +0200",
+      "ocean": "2026-04-02 13:45:31 +0200",
+      "extreme_hills": "2026-04-02 13:45:44 +0200",
+      "river": "2026-04-02 13:45:43 +0200",
+      "desert": "2026-04-02 13:49:12 +0200",
+      "stone_beach": "2026-04-02 13:47:35 +0200"
+    },
+    "done": false
+  },
+  "minecraft:story/root": {
+    "criteria": {
+      "crafting_table": "2026-04-02 13:46:56 +0200"
+    },
+    "done": true
+  }
+}

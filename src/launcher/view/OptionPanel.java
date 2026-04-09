@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -43,7 +44,7 @@ public class OptionPanel extends JPanel {
     JLabel labelVacio = new JLabel();
     JLabel userText = new JLabel("USUARIO:");
     JLabel javaVersionText = new JLabel("VERSION JAVA:");
-    JLabel minecraftVersionText = new JLabel("VERSION MINECRAFT:");
+    JLabel minecraftVersionText = new JLabel("PERFIL:");
     JLabel ramText = new JLabel("");
 
     //CAMPO DE TEXTO
@@ -66,7 +67,6 @@ public class OptionPanel extends JPanel {
         minecraftVersionText.setForeground(Color.WHITE);
         minecraftVersionText.setFont(fuenteMinecraft);
         minecraftVersion.setFont(fuenteMinecraft);
-        minecraftVersion.addItem("1.12.2");
         estilarComboBox(minecraftVersion);
 
         //COMBOBOXES
@@ -76,7 +76,7 @@ public class OptionPanel extends JPanel {
         javaVersion.setForeground(Color.WHITE);
         javaVersion.setBackground(new Color(230, 126, 34));
         estilarComboBox(javaVersion);
-        javaVersion.addItem("Java");
+        //javaVersion.addItem("Java");
         javaVersion.addItem("Adoptium");
         javaVersion.addItem("Graal");
         ramText.setFont(fuenteMinecraft);
@@ -115,7 +115,7 @@ public class OptionPanel extends JPanel {
         botonJugar.setPreferredSize(new Dimension(0, 60));
         botonJugar.setActionCommand("JUGAR");
         botonJugar.setMargin(new java.awt.Insets(7, 0, 0, 0));
-        
+
         //CONSTRUCCION PANEL
         panelControles.setLayout(new GridLayout(0, 1, 0, 10));
         panelControles.setOpaque(false);
@@ -175,6 +175,23 @@ public class OptionPanel extends JPanel {
         if (Version > 0) {
             javaVersion.setSelectedIndex(Version - 1);
         }
+    }
+
+    public void setPerfil(List<String> lista, String instancia) {
+
+        minecraftVersion.removeAllItems();
+        for (String nombre : lista) {
+            minecraftVersion.addItem(nombre);
+        }
+        minecraftVersion.setSelectedItem(instancia);
+
+    }
+
+    public String getPerfil() {
+        if (minecraftVersion.getSelectedItem() != null) {
+            return minecraftVersion.getSelectedItem().toString();
+        }
+        return "";
     }
 
     public void apagarJugar() {

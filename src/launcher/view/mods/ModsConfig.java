@@ -29,7 +29,7 @@ public class ModsConfig extends JFrame {
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         this.setLocationRelativeTo(null);
-        
+
         lasAventurasDeNeo.setLayout(new BoxLayout(lasAventurasDeNeo, BoxLayout.Y_AXIS));
         lasAventurasDeNeo.setBackground(new Color(60, 63, 65));
 
@@ -39,11 +39,18 @@ public class ModsConfig extends JFrame {
 
     public void setMods(List<JModButton> botones) {
 
-        for (JModButton boton : botones) {
-            // lasAventurasDeNeo.add(boton);
-            listaBotones.add(boton);
+        lasAventurasDeNeo.removeAll();
+        listaBotones.clear();
+
+        if (botones != null) {
+            for (JModButton boton : botones) {
+                listaBotones.add(boton);
+                lasAventurasDeNeo.add(boton);
+            }
         }
 
+        lasAventurasDeNeo.revalidate();
+        lasAventurasDeNeo.repaint();
     }
 
     public void setModsVista() {

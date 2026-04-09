@@ -72,7 +72,7 @@ public class Options extends JFrame {
         double alto = screenSize.height * 0.65;
         this.setSize((int) ancho, (int) alto);
         this.setResizable(false);
-        this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setLocationRelativeTo(null);
 
         //PANEL
@@ -223,14 +223,12 @@ public class Options extends JFrame {
     }
 
     public void setFullScreenButton(boolean texto) {
-
         if (texto) {
             fullScreen.setBackground(verdeMinecraft);
         } else {
             fullScreen.setBackground(rojoMinecraft);
         }
         fullScreen.setText(String.valueOf(texto));
-
     }
 
     public void setVboButton(boolean texto) {
@@ -240,33 +238,18 @@ public class Options extends JFrame {
             vbo.setBackground(rojoMinecraft);
         }
         vbo.setText(String.valueOf(texto));
-
     }
 
     public void setAdvancedToolTipsButton(boolean texto) {
-
         if (texto) {
             advancedToolTips.setBackground(verdeMinecraft);
         } else {
             advancedToolTips.setBackground(rojoMinecraft);
         }
         advancedToolTips.setText(String.valueOf(texto));
-
-    }
-
-    public void setShowFps(boolean texto) {
-
-        if (texto) {
-            showFps.setBackground(verdeMinecraft);
-        } else {
-            showFps.setBackground(rojoMinecraft);
-        }
-        showFps.setText(String.valueOf(texto));
-
     }
 
     public void setLang(int texto) {
-
         switch (texto) {
             case 1:
                 lang.setSelectedIndex(1);
@@ -278,12 +261,10 @@ public class Options extends JFrame {
                 lang.setSelectedIndex(0);
                 break;
         }
-
     }
 
     public void setGuiScale(int valorVanilla) {
         switch (valorVanilla) {
-
             case 0:
                 guiScale.setSelectedIndex(0);
                 break;
@@ -302,45 +283,16 @@ public class Options extends JFrame {
         }
     }
 
-    public boolean getShowFps() {
-        return Boolean.parseBoolean(showFps.getText());
-    }
-
     public boolean getFullScreenButton() {
-
         return Boolean.parseBoolean(fullScreen.getText());
-
     }
 
     public boolean getVboButton() {
-
         return Boolean.parseBoolean(vbo.getText());
-
     }
 
     public int getLang() {
-
         return lang.getSelectedIndex();
-
-    }
-
-    //OPTIFINE
-    public int getDynamicLights() {
-
-        return dynamicLights.getSelectedIndex();
-
-    }
-
-    public boolean getSmartAnimations() {
-
-        return Boolean.parseBoolean(smartAnimations.getText());
-
-    }
-
-    public int getConnectedTextures() {
-
-        return connectedTextures.getSelectedIndex();
-
     }
 
     public int getGuiScale() {
@@ -348,16 +300,26 @@ public class Options extends JFrame {
     }
 
     public boolean getAdvancedToolTipsButton() {
-
         return Boolean.parseBoolean(advancedToolTips.getText());
-
     }
 
-    public boolean getFastRender() {
-        return Boolean.parseBoolean(fastRender.getText());
+    // --- SECCIÓN OPTIFINE (CON PROTECCIÓN ANTI-SOBRESCRITURA) ---
+    public void setShowFps(boolean texto) {
+        if (!showFps.isEnabled()) {
+            return; // Seguro activado
+        }
+        if (texto) {
+            showFps.setBackground(verdeMinecraft);
+        } else {
+            showFps.setBackground(rojoMinecraft);
+        }
+        showFps.setText(String.valueOf(texto));
     }
 
     public void setSmartAnimations(boolean texto) {
+        if (!smartAnimations.isEnabled()) {
+            return; // Seguro activado
+        }
         if (texto) {
             smartAnimations.setBackground(verdeMinecraft);
         } else {
@@ -367,6 +329,9 @@ public class Options extends JFrame {
     }
 
     public void setFastRender(boolean texto) {
+        if (!fastRender.isEnabled()) {
+            return; // Seguro activado
+        }
         if (texto) {
             fastRender.setBackground(verdeMinecraft);
         } else {
@@ -376,8 +341,10 @@ public class Options extends JFrame {
     }
 
     public void setDynamicLights(int valorOptifine) {
+        if (!dynamicLights.isEnabled()) {
+            return; // Seguro activado
+        }
         switch (valorOptifine) {
-
             case 0:
                 dynamicLights.setSelectedIndex(0);
                 break;
@@ -394,11 +361,10 @@ public class Options extends JFrame {
     }
 
     public void setConnectedTextures(int valorOptifine) {
-
-        System.out.println("COSA RARISIMA" + valorOptifine);
-
+        if (!connectedTextures.isEnabled()) {
+            return; // Seguro activado
+        }
         switch (valorOptifine) {
-
             case 0:
                 connectedTextures.setSelectedIndex(0);
                 break;
@@ -411,6 +377,66 @@ public class Options extends JFrame {
             default:
                 connectedTextures.setSelectedIndex(0);
                 break;
+        }
+    }
+
+    public boolean getShowFps() {
+        return Boolean.parseBoolean(showFps.getText());
+    }
+
+    public int getDynamicLights() {
+        return dynamicLights.getSelectedIndex();
+    }
+
+    public boolean getSmartAnimations() {
+        return Boolean.parseBoolean(smartAnimations.getText());
+    }
+
+    public int getConnectedTextures() {
+        return connectedTextures.getSelectedIndex();
+    }
+
+    public boolean getFastRender() {
+        return Boolean.parseBoolean(fastRender.getText());
+    }
+
+    // --- NUEVA LÓGICA DE BLOQUEO DE OPTIFINE ---
+    public void setOptifineHabilitado(boolean estado) {
+        // Habilitamos o deshabilitamos los componentes físicamente
+        fastRender.setEnabled(estado);
+        smartAnimations.setEnabled(estado);
+        showFps.setEnabled(estado);
+        dynamicLights.setEnabled(estado);
+        connectedTextures.setEnabled(estado);
+
+        String avisoOptifine = "Requiere tener Optifine instalado en esta instancia.";
+
+        if (!estado) {
+            // Si NO hay Optifine, forzamos el aspecto de "Apagado/Bloqueado"
+            Color colorBloqueado = new Color(100, 100, 100); // Gris oscuro
+
+            fastRender.setBackground(colorBloqueado);
+            fastRender.setText("BLOQUEADO");
+            fastRender.setToolTipText(avisoOptifine);
+
+            smartAnimations.setBackground(colorBloqueado);
+            smartAnimations.setText("BLOQUEADO");
+            smartAnimations.setToolTipText(avisoOptifine);
+
+            showFps.setBackground(colorBloqueado);
+            showFps.setText("BLOQUEADO");
+            showFps.setToolTipText(avisoOptifine);
+
+            // Añadimos tooltips a los comboboxes grises
+            dynamicLights.setToolTipText(avisoOptifine);
+            connectedTextures.setToolTipText(avisoOptifine);
+        } else {
+            // Si HAY Optifine, limpiamos los tooltips para que no estorben
+            fastRender.setToolTipText(null);
+            smartAnimations.setToolTipText(null);
+            showFps.setToolTipText(null);
+            dynamicLights.setToolTipText(null);
+            connectedTextures.setToolTipText(null);
         }
     }
 
@@ -444,11 +470,15 @@ public class Options extends JFrame {
 
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setHorizontalAlignment(javax.swing.JLabel.CENTER);
-                if (isSelected) {
 
+                // No cambiamos colores al hacer hover si el combobox está desactivado
+                if (!combo.isEnabled()) {
+                    return this;
+                }
+
+                if (isSelected) {
                     setBackground(new java.awt.Color(46, 204, 113));
                     setForeground(java.awt.Color.WHITE);
-
                 } else {
                     setBackground(new java.awt.Color(230, 126, 34));
                     setForeground(java.awt.Color.WHITE);

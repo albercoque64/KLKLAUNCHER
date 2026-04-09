@@ -3,6 +3,9 @@ package launcher.main;
 import launcher.controller.Controller;
 import launcher.model.TextParser;
 import launcher.view.PrincipalView;
+import launcher.view.launcher.InstalarView;
+import launcher.view.launcher.InstanciasConfig;
+import launcher.view.launcher.LauncherView;
 import launcher.view.mods.ModsConfig;
 import launcher.view.mods.ModsInfo;
 import launcher.view.mods.ModsView;
@@ -14,15 +17,18 @@ public class MainLauncher {
 
         System.setProperty("sun.java2d.uiScale", "1.0");
 
-        TextParser parser = new TextParser();
-        PrincipalView ventana = new PrincipalView();
         Options opciones = new Options();
-
+        LauncherView launcher = new LauncherView();
         ModsView modsView = new ModsView();
         ModsInfo modsInfo = new ModsInfo();
         ModsConfig mods = new ModsConfig();
+        InstalarView instalation = new InstalarView();
+        PrincipalView ventana = new PrincipalView();
+        InstanciasConfig instancias = new InstanciasConfig();
 
-        Controller controller = new Controller(ventana, opciones, parser, mods, modsInfo, modsView);
+        TextParser parser = new TextParser();
+
+        Controller controller = new Controller(ventana, opciones, parser, mods, modsInfo, modsView, launcher, instalation, instancias);
 
         controller.setModListener();
         mods.setModsVista();

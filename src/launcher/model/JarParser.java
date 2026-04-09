@@ -6,10 +6,10 @@ import java.util.jar.*;
 
 public class JarParser {
 
-    public List<Mod> escanearMods() {
+    public List<Mod> escanearMods(String nombreInstancia) {
         List<Mod> listaMods = new ArrayList<>();
         String rutaBase = System.getProperty("user.dir");
-        String rutaMods = rutaBase + "/portable/.minecraft/mods";
+        String rutaMods = rutaBase + "/portable/instancias/" + nombreInstancia + "/mods";
 
         System.out.println("Buscando mods en: " + rutaMods);
 

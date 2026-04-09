@@ -1,11 +1,23 @@
 package launcher.model;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 public class TextParser {
 
@@ -13,11 +25,13 @@ public class TextParser {
     List<String> textoOpciones;
     List<String> textoOpcionesOf;
 
+    String instanciaActual = "";
+
+    /*
     //RUTAS
-    String java = "\"%~dp0portable\\runtimes\\java\\bin\\java.exe\"";
     String adoptium = "\"%~dp0portable\\runtimes\\adoptium\\bin\\java.exe\"";
     String graal = "\"%~dp0portable\\runtimes\\graal\\bin\\java.exe\"";
-
+     */
     //OPCIONES
     boolean fullscreen = false;
     boolean useVbo = false;
@@ -32,14 +46,103 @@ public class TextParser {
     int ofDynamicLights = 3;
     int ofConnectedTextures = 3;
 
-    public TextParser() {
-        batReader();
-        optionsReader();
-        optionsOfReader();
+    private File archivoXml;
+    private List<String> lineasXml;
 
+    public TextParser() {
+        //batReader();
+
+        //uvu
+        XmlConfigManager();
+        this.instanciaActual = leerAtributo("instancia");
+
+        if (this.instanciaActual != null && !this.instanciaActual.isEmpty()) {
+            cargarOpcionesDeInstancia(this.instanciaActual);
+        }
     }
 
-    //COSAS BAT
+    public void cargarOpcionesDeInstancia(String instancia) {
+        this.instanciaActual = instancia;
+        optionsReader();
+        optionsOfReader();
+    }
+
+    public void XmlConfigManager() {
+        String rutaBase = System.getProperty("user.dir");
+        this.archivoXml = new File(rutaBase + "/launcher", "launcher_config.xml");
+        this.lineasXml = new ArrayList<>();
+        crearSiNoExiste();
+        leerArchivo();
+    }
+
+    private void crearSiNoExiste() {
+        if (!archivoXml.exists()) {
+            try {
+                archivoXml.getParentFile().mkdirs();
+                String contenidoBase = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                        + "<configuracion>\n"
+                        + "    <usuario>Steve</usuario>\n"
+                        + "    <ram>4096</ram>\n"
+                        + "    <instancia></instancia>\n"
+                        + "    <motor>1</motor>\n"
+                        + "</configuracion>";
+
+                FileWriter escritor = new FileWriter(archivoXml, false);
+                escritor.write(contenidoBase);
+                escritor.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void leerArchivo() {
+        try {
+            this.lineasXml = Files.readAllLines(archivoXml.toPath(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String leerAtributo(String atributo) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(archivoXml);
+            doc.getDocumentElement().normalize();
+
+            NodeList lista = doc.getElementsByTagName(atributo);
+            if (lista.getLength() > 0) {
+                return lista.item(0).getTextContent();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void escribitAtributo(String nombre, String valor) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(archivoXml);
+            doc.getDocumentElement().normalize();
+
+            NodeList lista = doc.getElementsByTagName(nombre);
+            if (lista.getLength() > 0) {
+                lista.item(0).setTextContent(valor);
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                DOMSource source = new DOMSource(doc);
+                StreamResult result = new StreamResult(archivoXml);
+                transformer.transform(source, result);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*COSAS BAT
     public void batReader() {
         List<String> lineas = new ArrayList<>();
         String rutaBase = System.getProperty("user.dir");
@@ -113,7 +216,7 @@ public class TextParser {
 
     public void actualizarVariablesBat(int opcionJava, int ramMB, String usuario) {
 
-        String rutaFinal = this.java;
+        String rutaFinal = this.adoptium;
         switch (opcionJava) {
             case 2:
                 rutaFinal = this.adoptium;
@@ -122,7 +225,7 @@ public class TextParser {
                 rutaFinal = this.graal;
                 break;
             default:
-                rutaFinal = this.java;
+                rutaFinal = this.adoptium;
                 break;
         }
 
@@ -163,12 +266,22 @@ public class TextParser {
             e.printStackTrace();
         }
     }
-
+     */
     //COSAS OPCIONES
     public void optionsReader() {
+        if (this.instanciaActual == null || this.instanciaActual.isEmpty()) {
+            this.textoOpciones = new ArrayList<>();
+            return;
+        }
+
         List<String> lineas = new ArrayList<>();
         String rutaBase = System.getProperty("user.dir");
-        java.io.File archivoOpciones = new java.io.File(rutaBase, "/portable/.minecraft/options.txt");
+        File archivoOpciones = new File(rutaBase, "/portable/instancias/" + this.instanciaActual + "/options.txt");
+
+        if (!archivoOpciones.exists()) {
+            this.textoOpciones = new ArrayList<>();
+            return;
+        }
 
         try (BufferedReader br = new BufferedReader(new FileReader(archivoOpciones))) {
             String linea;
@@ -182,6 +295,9 @@ public class TextParser {
     }
 
     public boolean getFullscreen() {
+        if (this.textoOpciones == null) {
+            return false;
+        }
         for (String linea : this.textoOpciones) {
             String l = linea.trim();
             if (l.startsWith("fullscreen:")) {
@@ -191,11 +307,13 @@ public class TextParser {
             }
         }
         System.out.println("Eiñ?¿ Fullscreen");
-
         return false;
     }
 
     public boolean getUseVbo() {
+        if (this.textoOpciones == null) {
+            return false;
+        }
         for (String linea : this.textoOpciones) {
             String l = linea.trim();
             if (l.startsWith("useVbo:")) {
@@ -209,6 +327,9 @@ public class TextParser {
     }
 
     public boolean getAdvancedItemTooltips() {
+        if (this.textoOpciones == null) {
+            return false;
+        }
         for (String linea : this.textoOpciones) {
             String l = linea.trim();
             if (l.startsWith("advancedItemTooltips:")) {
@@ -222,13 +343,14 @@ public class TextParser {
     }
 
     public int getLang() {
+        if (this.textoOpciones == null) {
+            return 0;
+        }
         for (String linea : this.textoOpciones) {
             String l = linea.trim();
             if (l.startsWith("lang:")) {
                 String langTexto = l.substring("lang:".length()).trim();
-
                 System.out.println("[PARSER OP] Texto idioma encontrado: " + langTexto);
-
                 if (langTexto.equals("es_es")) {
                     return 0;
                 } else {
@@ -240,6 +362,9 @@ public class TextParser {
     }
 
     public int getGuiScale() {
+        if (this.textoOpciones == null) {
+            return 1;
+        }
         for (String linea : this.textoOpciones) {
             String l = linea.trim();
             if (l.startsWith("guiScale:")) {
@@ -256,28 +381,27 @@ public class TextParser {
     }
 
     public void actualizarOpciones(boolean opcionFullscreen, boolean opcionUseVbo, boolean opcionAdvancedItemTooltips, int opcionLang, int guiScale) {
-
         this.fullscreen = opcionFullscreen;
         this.useVbo = opcionUseVbo;
         this.advancedItemTooltips = opcionAdvancedItemTooltips;
         this.lang = opcionLang;
         this.guiScale = guiScale;
 
+        if (this.textoOpciones == null || this.textoOpciones.isEmpty() || this.instanciaActual.isEmpty()) {
+            return;
+        }
+
         for (int i = 0; i < this.textoOpciones.size(); i++) {
             String linea = this.textoOpciones.get(i).trim();
 
             if (linea.startsWith("fullscreen:")) {
                 this.textoOpciones.set(i, "fullscreen:" + fullscreen);
-
             } else if (linea.startsWith("useVbo:")) {
                 this.textoOpciones.set(i, "useVbo:" + useVbo);
-
             } else if (linea.startsWith("advancedItemTooltips:")) {
                 this.textoOpciones.set(i, "advancedItemTooltips:" + advancedItemTooltips);
-
             } else if (linea.startsWith("guiScale:")) {
                 this.textoOpciones.set(i, "guiScale:" + guiScale);
-
             } else if (linea.startsWith("lang:")) {
                 if (opcionLang == 0) {
                     this.textoOpciones.set(i, "lang:es_es");
@@ -286,21 +410,18 @@ public class TextParser {
                 }
             }
         }
-
         guardarCambiosOpciones();
-
     }
 
     private void guardarCambiosOpciones() {
         try {
             String rutaBase = System.getProperty("user.dir");
-            java.io.File archivoOpciones = new java.io.File(rutaBase, "/portable/.minecraft/options.txt");
+            File archivoOpciones = new File(rutaBase, "/portable/instancias/" + this.instanciaActual + "/options.txt");
 
             String contenidoFinal = String.join("\r\n", this.textoOpciones);
             FileWriter escritor = new FileWriter(archivoOpciones, false);
             escritor.write(contenidoFinal);
             escritor.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -308,9 +429,19 @@ public class TextParser {
 
     //COSAS OPTIFINE
     public void optionsOfReader() {
+        if (this.instanciaActual == null || this.instanciaActual.isEmpty()) {
+            this.textoOpcionesOf = new ArrayList<>();
+            return;
+        }
+
         List<String> lineas = new ArrayList<>();
         String rutaBase = System.getProperty("user.dir");
-        java.io.File archivoOpcionesOf = new java.io.File(rutaBase, "/portable/.minecraft/optionsof.txt");
+        File archivoOpcionesOf = new File(rutaBase, "/portable/instancias/" + this.instanciaActual + "/optionsof.txt");
+
+        if (!archivoOpcionesOf.exists()) {
+            this.textoOpcionesOf = new ArrayList<>();
+            return;
+        }
 
         try (BufferedReader br = new BufferedReader(new FileReader(archivoOpcionesOf))) {
             String linea;
@@ -324,6 +455,9 @@ public class TextParser {
     }
 
     public boolean getOfFastRender() {
+        if (this.textoOpcionesOf == null) {
+            return false;
+        }
         for (String linea : this.textoOpcionesOf) {
             String l = linea.trim();
             if (l.startsWith("ofFastRender:")) {
@@ -336,6 +470,9 @@ public class TextParser {
     }
 
     public boolean getOfSmartAnimations() {
+        if (this.textoOpcionesOf == null) {
+            return false;
+        }
         for (String linea : this.textoOpcionesOf) {
             String l = linea.trim();
             if (l.startsWith("ofSmartAnimations:")) {
@@ -348,6 +485,9 @@ public class TextParser {
     }
 
     public boolean getOfShowFps() {
+        if (this.textoOpcionesOf == null) {
+            return false;
+        }
         for (String linea : this.textoOpcionesOf) {
             String l = linea.trim();
             if (l.startsWith("ofShowFps:")) {
@@ -360,6 +500,9 @@ public class TextParser {
     }
 
     public int getOfDynamicLights() {
+        if (this.textoOpcionesOf == null) {
+            return 3;
+        }
         for (String linea : this.textoOpcionesOf) {
             String l = linea.trim();
             if (l.startsWith("ofDynamicLights:")) {
@@ -376,6 +519,9 @@ public class TextParser {
     }
 
     public int getOfConnectedTextures() {
+        if (this.textoOpcionesOf == null) {
+            return 1;
+        }
         for (String linea : this.textoOpcionesOf) {
             String l = linea.trim();
             if (l.startsWith("ofConnectedTextures:")) {
@@ -392,14 +538,13 @@ public class TextParser {
     }
 
     public void actualizarOpcionesOf(boolean fastRender, boolean smartAnimations, boolean showFps, int dynamicLights, int connectedTextures) {
-
         this.ofFastRender = fastRender;
         this.ofSmartAnimations = smartAnimations;
         this.ofShowFps = showFps;
         this.ofDynamicLights = dynamicLights;
         this.ofConnectedTextures = connectedTextures;
 
-        if (this.textoOpcionesOf == null || this.textoOpcionesOf.isEmpty()) {
+        if (this.textoOpcionesOf == null || this.textoOpcionesOf.isEmpty() || this.instanciaActual.isEmpty()) {
             System.out.println("[PARSER OF] Lista vacia, no se puede guardar.");
             return;
         }
@@ -425,11 +570,9 @@ public class TextParser {
     private void guardarCambiosOpcionesOf() {
         try {
             String rutaBase = System.getProperty("user.dir");
-            java.io.File archivoOpcionesOf = new java.io.File(rutaBase, "/portable/.minecraft/optionsof.txt");
+            File archivoOpcionesOf = new File(rutaBase, "/portable/instancias/" + this.instanciaActual + "/optionsof.txt");
 
-            // Usamos join con salto de línea
             String contenidoFinal = String.join("\r\n", this.textoOpcionesOf);
-
             FileWriter escritor = new FileWriter(archivoOpcionesOf, false);
             escritor.write(contenidoFinal);
             escritor.close();
@@ -440,4 +583,24 @@ public class TextParser {
         }
     }
 
+    public List<String> escanearInstancias() {
+        java.util.List<String> instancias = new java.util.ArrayList<>();
+        File carpeta = new File(System.getProperty("user.dir") + "/portable/instancias");
+
+        if (carpeta.exists() && carpeta.isDirectory()) {
+            File[] archivos = carpeta.listFiles();
+            if (archivos != null) {
+                for (File f : archivos) {
+                    if (f.isDirectory() && new File(f, "instrucciones.json").exists()) {
+                        instancias.add(f.getName());
+                    }
+                }
+            }
+        }
+        return instancias;
+    }
+
+    public boolean hasOptifine() {
+        return this.textoOpcionesOf != null && !this.textoOpcionesOf.isEmpty();
+    }
 }
