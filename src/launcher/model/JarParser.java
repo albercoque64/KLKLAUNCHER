@@ -47,7 +47,9 @@ public class JarParser {
 
             if (siguiente.contains("/") || siguiente.contains(";") || siguiente.contains("(")
                     || siguiente.contains("$") || siguiente.contains("<") || siguiente.startsWith("java.")) {
-                continue;
+                if (!actual.equals("dependencies") && !actual.contains("after:") && !actual.contains("before:")) {
+                    continue;
+                }
             }
 
             if (actual.equals("modid") && mod.getModId().isEmpty()) {
@@ -77,10 +79,10 @@ public class JarParser {
                 }
             }
 
-            if (actual.equals("dependencies") || actual.equals("required-after")) {
-                if (!mod.getDependencies().contains(siguiente)) {
-                    mod.getDependencies().add(siguiente);
-                }
+            if (actual.equals("dependencies") && siguiente.contains(":")) {
+                extraerYAgregarDependencias(mod, siguiente);
+            } else if (actual.contains("required-after:") || actual.contains("after:") || actual.contains("before:")) {
+                extraerYAgregarDependencias(mod, actual);
             }
 
             if (actual.startsWith("OptiFine_") && actual.length() > 10) {
@@ -100,6 +102,16 @@ public class JarParser {
         }
 
         return mod;
+    }
+
+    private void extraerYAgregarDependencias(Mod mod, String textoCrudo) {
+        String[] partes = textoCrudo.split(";");
+        for (String p : partes) {
+            String depLimpia = p.trim();
+            if (!depLimpia.isEmpty() && !depLimpia.equals("dependencies") && !mod.getDependencies().contains(depLimpia)) {
+                mod.getDependencies().add(depLimpia);
+            }
+        }
     }
 
     public File[] buscarJars(String ruta) {

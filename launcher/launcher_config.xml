@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><configuracion>
-    <usuario>albercoque6464</usuario>
-    <ram>8192</ram>
-    <instancia>Instancia</instancia>
-    <motor>1</motor>
+    <usuario>albercoque64</usuario>
+    <ram>16384</ram>
+    <instancia>CleanRoom5.8</instancia>
+    <motor>2</motor>
 </configuracion>

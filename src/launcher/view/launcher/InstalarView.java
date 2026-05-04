@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -122,5 +121,9 @@ public class InstalarView extends JFrame {
 
     public void limpiarCampo() {
         campoNombre.setText("");
+    }
+
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
     }
 }

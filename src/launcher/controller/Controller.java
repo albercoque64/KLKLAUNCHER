@@ -104,13 +104,13 @@ public class Controller {
 
                 //LAUNCHER    
                 case "LAUNCHER":
-
+                    launcherView.setPadre(view);
                     launcherView.setVisible(true);
 
                     break;
 
                 case "INSTALAR":
-
+                    instalation.setPadre(view);
                     instalation.setVisible(true);
 
                     break;
@@ -127,7 +127,7 @@ public class Controller {
                             }
                         }
                     }
-
+                    instanciasConfig.setPadre(view);
                     instanciasConfig.setInstancias(nombresInstancias);
                     instanciasConfig.setActionListener(this);
                     instanciasConfig.setVisible(true);
@@ -186,12 +186,13 @@ public class Controller {
                     view.revalidate();
                     view.repaint();
                     view.setPerfil(model.escanearInstancias(), model.leerAtributo("instancia"));
+                    instalation.setPadre(view);
                     instalation.setVisible(false);
 
                     break;
 
                 case "CANCELAR":
-
+                    instalation.setPadre(view);
                     instalation.limpiarCampo();
                     instalation.setVisible(false);
 
@@ -226,6 +227,8 @@ public class Controller {
 
                         modConfig.setMods(inicializadorMods(instanciaMods));
                         modConfig.setActionListener(modGestionerListener);
+                        //modView.setBounds();
+                        modView.setPadre(view);
                         modView.setVisible(true);
 
                     } else {
@@ -236,12 +239,14 @@ public class Controller {
 
                 case "MODINFO":
                     modView.setVisible(false);
+                    modInfo.setPadre(view);
                     modInfo.setVisible(true);
                     break;
 
                 case "MODCONFIG":
                     modView.setVisible(false);
-                    modConfig.setVisible(true); // ¡Aquí se mostrará por fin llena y repintada!
+                    modConfig.setVisible(true);
+                    modConfig.setPadre(view);
                     break;
 
                 //OPCIONES
@@ -266,7 +271,7 @@ public class Controller {
                         options.setShowFps(model.getOfShowFps());
                         options.setDynamicLights(model.getOfDynamicLights());
                         options.setSmartAnimations(model.getOfSmartAnimations());
-
+                        options.setPadre(view);
                         options.setVisible(true);
                     }
                     /*

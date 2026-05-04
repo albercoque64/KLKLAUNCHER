@@ -72,4 +72,8 @@ public class LauncherView extends JFrame {
         instalar.addActionListener(actionListener);
         versiones.addActionListener(actionListener);
     }
+
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
+    }
 }

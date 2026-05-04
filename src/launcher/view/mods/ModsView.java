@@ -68,4 +68,8 @@ public class ModsView extends JFrame {
         informacion.addActionListener(actionListener);
     }
 
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
+    }
+
 }

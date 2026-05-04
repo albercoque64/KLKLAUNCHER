@@ -488,4 +488,7 @@ public class Options extends JFrame {
         });
     }
 
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
+    }
 }

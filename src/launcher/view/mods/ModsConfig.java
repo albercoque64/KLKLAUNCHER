@@ -67,4 +67,8 @@ public class ModsConfig extends JFrame {
             boton.setActionListener(actionListener);
         }
     }
+
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
+    }
 }

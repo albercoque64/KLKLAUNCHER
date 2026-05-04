@@ -88,4 +88,8 @@ public class InstanciasConfig extends JFrame {
             boton.addActionListener(actionListener);
         }
     }
+
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
+    }
 }

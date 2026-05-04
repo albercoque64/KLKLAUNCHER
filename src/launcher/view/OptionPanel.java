@@ -51,7 +51,7 @@ public class OptionPanel extends JPanel {
     JTextField user = new JTextField("");
 
     //SLIDER
-    private final int[] ram = {2, 4, 6, 8, 12, 16};
+    private final int[] ram = {2, 4, 6, 8, 12, 16, 20, 32, 64};
     JSlider sliderRam = new JSlider(0, ram.length - 1, 2);
 
     public OptionPanel() {
@@ -96,7 +96,7 @@ public class OptionPanel extends JPanel {
         for (int i = 0; i < ram.length; i++) {
             JLabel lbl = new JLabel(ram[i] + "GB");
             lbl.setForeground(Color.LIGHT_GRAY);
-            lbl.setFont(fuenteMinecraft.deriveFont(10f));
+            lbl.setFont(fuenteMinecraft.deriveFont(8f));
             labelTable.put(i, lbl);
         }
         sliderRam.setLabelTable(labelTable);

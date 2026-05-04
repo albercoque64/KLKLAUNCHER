@@ -45,7 +45,7 @@ public class ModsInfo extends JFrame {
         lista.setFont(fuente);
         lista.setBackground(new Color(60, 63, 65));
         lista.setForeground(Color.WHITE);
-        
+
         //COSA GIGADUPA MAGICA QUE SAQUE DEL GEMINI
         lista.setCellRenderer(new DefaultListCellRenderer() {
             @Override
@@ -83,7 +83,7 @@ public class ModsInfo extends JFrame {
 
         if (listaMods != null) {
             for (Mod mod : this.listaMods) {
-                String texto = "<html>" + mod.getModName()+" " 
+                String texto = "<html>" + mod.getModName() + " "
                         + "<font color='" + hexVerde + "'>Versiones:</font> (" + mod.getMinecraftVersions() + ") "
                         + "<font color='" + hexRojo + "'>Dependencias:</font> " + mod.getDependencies()
                         + "</html>";
@@ -94,5 +94,9 @@ public class ModsInfo extends JFrame {
         lista.setListData(elArray);
         lista.revalidate();
         lista.repaint();
+    }
+
+    public void setPadre(JFrame padre) {
+        this.setLocationRelativeTo(padre);
     }
 }
