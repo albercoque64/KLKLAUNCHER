@@ -6,3 +6,6 @@ logs/
 Thumbs.db
 portable/.minecraft/
 portable/runtimes
+portable/instancias
+JavaScriptLibrary.jar
+java-discord-rpc-2.0.1-all.jar

@@ -131,6 +131,7 @@ public class Controller {
                     instanciasConfig.setInstancias(nombresInstancias);
                     instanciasConfig.setActionListener(this);
                     instanciasConfig.setVisible(true);
+
                     break;
 
                 case "CONFIRMARELIMINARINSTANCIA":
@@ -165,7 +166,7 @@ public class Controller {
 
                             if (exito) {
                                 javax.swing.JOptionPane.showMessageDialog(null, "Instancia eliminada.");
-
+                                launcherView.setVisible(false);
                                 java.awt.Window ventana = javax.swing.SwingUtilities.getWindowAncestor(botonPulsado);
                                 if (ventana != null) {
                                     ventana.setVisible(false);
@@ -188,6 +189,7 @@ public class Controller {
                     view.setPerfil(model.escanearInstancias(), model.leerAtributo("instancia"));
                     instalation.setPadre(view);
                     instalation.setVisible(false);
+                    launcherView.setVisible(false);
 
                     break;
 
@@ -225,11 +227,53 @@ public class Controller {
 
                     if (instanciaMods != null && !instanciaMods.isEmpty()) {
 
-                        modConfig.setMods(inicializadorMods(instanciaMods));
-                        modConfig.setActionListener(modGestionerListener);
-                        //modView.setBounds();
-                        modView.setPadre(view);
-                        modView.setVisible(true);
+                        //BARRA
+                        javax.swing.JDialog dialogoCarga = new javax.swing.JDialog(view, "Escaneando Mods", true); // true = bloquea la ventana principal
+                        javax.swing.JProgressBar barraCarga = new javax.swing.JProgressBar(0, 100);
+                        barraCarga.setStringPainted(true);
+
+                        dialogoCarga.add(barraCarga);
+                        dialogoCarga.setSize(300, 70);
+                        dialogoCarga.setLocationRelativeTo(view); 
+
+                        //WORKER
+                        javax.swing.SwingWorker<java.util.List<launcher.utils.JModButton>, Integer> worker = new javax.swing.SwingWorker<java.util.List<launcher.utils.JModButton>, Integer>() {
+
+                            @Override
+                            protected java.util.List<launcher.utils.JModButton> doInBackground() throws Exception {
+
+                                return inicializadorMods(instanciaMods, porcentaje -> publish(porcentaje));
+                            }
+
+                            //BARRITA CON ACTUALIZACIÓN DE PORCENTAJE
+                            @Override
+                            protected void process(java.util.List<Integer> chunks) {
+                                int ultimoPorcentaje = chunks.get(chunks.size() - 1);
+                                barraCarga.setValue(ultimoPorcentaje);
+                            }
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    java.util.List<launcher.utils.JModButton> modsCargados = get();
+
+                                    modConfig.setMods(modsCargados);
+                                    modConfig.setActionListener(modGestionerListener);
+                                    modView.setPadre(view);
+
+                                    dialogoCarga.dispose(); // CERRAMOS Y DESTRUIMOS LA VENTANA DE CARGA
+                                    modView.setVisible(true);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    dialogoCarga.dispose();
+                                }
+                            }
+                        };
+
+                        worker.execute();
+
+                        dialogoCarga.setVisible(true);
 
                     } else {
                         System.out.println("No se puede abrir: No hay instancia seleccionada.");
@@ -403,11 +447,18 @@ public class Controller {
                                 new java.io.InputStreamReader(proceso.getInputStream()))) {
 
                             String linea;
-                            while ((linea = reader.readLine()) != null) {
-                                view.getConsolePanel().log(linea);
+                            //ANTI RALLAMIENTOS
+                            while (proceso.isAlive()) {
+                                if (reader.ready()) {
+                                    linea = reader.readLine();
+                                    if (linea != null) {
+                                        final String l = linea;
+                                        javax.swing.SwingUtilities.invokeLater(() -> view.getConsolePanel().log(l));
+                                    }
+                                } else {
+                                    Thread.sleep(100);
+                                }
                             }
-
-                            proceso.waitFor();
                         }
                     } else {
                         view.getConsolePanel().log("ERROR: No se pudo iniciar el proceso de Minecraft.");
@@ -461,9 +512,11 @@ public class Controller {
         this.modConfig.setActionListener(modGestionerListener);
     }
 
-    public List<JModButton> inicializadorMods(String nombreInstancia) {
-        JarParser jarParser = new JarParser();
-        List<Mod> modsEncontrados = jarParser.escanearMods(nombreInstancia);
+    private List<JModButton> inicializadorMods(String nombreInstancia, java.util.function.Consumer<Integer> actualizadorProgreso) {
+
+        JarParser miParser = new JarParser();
+        List<Mod> modsEncontrados = miParser.escanearMods(nombreInstancia, actualizadorProgreso);
+
         List<JModButton> botones = new ArrayList<>();
 
         if (modsEncontrados != null) {

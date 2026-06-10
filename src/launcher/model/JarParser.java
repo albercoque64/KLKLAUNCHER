@@ -6,7 +6,7 @@ import java.util.jar.*;
 
 public class JarParser {
 
-    public List<Mod> escanearMods(String nombreInstancia) {
+    public List<Mod> escanearMods(String nombreInstancia, java.util.function.Consumer<Integer> actualizadorProgreso) {
         List<Mod> listaMods = new ArrayList<>();
         String rutaBase = System.getProperty("user.dir");
         String rutaMods = rutaBase + "/portable/instancias/" + nombreInstancia + "/mods";
@@ -16,6 +16,9 @@ public class JarParser {
         File[] misJars = buscarJars(rutaMods);
 
         if (misJars != null && misJars.length > 0) {
+            int totalArchivos = misJars.length;
+            int procesados = 0;
+
             for (File archivoJar : misJars) {
                 System.out.println("Procesando: " + archivoJar.getName());
 
@@ -25,10 +28,17 @@ public class JarParser {
                 if (!nuevoMod.getModId().isEmpty() || !nuevoMod.getModName().isEmpty()) {
                     listaMods.add(nuevoMod);
                 }
+
+                procesados++;
+                if (actualizadorProgreso != null) {
+                    int porcentaje = (int) (((double) procesados / totalArchivos) * 100);
+                    actualizadorProgreso.accept(porcentaje);
+                }
             }
         } else {
             System.out.println("No se encontraron archivos .jar.");
         }
+
         listaMods.sort(Comparator.comparing(Mod::getModName, String.CASE_INSENSITIVE_ORDER));
         return listaMods;
     }
