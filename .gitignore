@@ -1,11 +1,20 @@
+# Compilación
 build/
 dist/
 *.class
+
+# NetBeans
 nbproject/private/
+
+# Logs
 logs/
+
+# Windows
 Thumbs.db
-portable/.minecraft/
-portable/runtimes/
-portable/instancias/
-JavaScriptLibrary.jar/
-java-discord-rpc-2.0.1-all.jar/
+
+# Portable (NO subir nada)
+portable/
+
+# Dependencias externas
+JavaScriptLibrary.jar
+java-discord-rpc-2.0.1-all.jar
